@@ -12,7 +12,7 @@ export interface ICharacter {
   minFaves: number;
   isSyncing?: boolean;
   lastSynced?: Date;
-  debutDate?: Date;
+  debutDate: Date;
 }
 
 export interface ICharacterDoc extends ICharacter, Document {}

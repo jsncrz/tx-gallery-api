@@ -4,57 +4,61 @@ import paginate from '../paginate/paginate';
 import { ICharacterDoc, ICharacterModel } from './character.interfaces';
 
 const CharacterSchema = new mongoose.Schema<ICharacterDoc, ICharacterModel>({
-  name: {
-    type: String,
-    required: true,
-    trim: true,
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    tlName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    twitterLink: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    pictureUrl: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    tag: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    group: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    limit: {
+      type: Number,
+      required: true,
+    },
+    minFaves: {
+      type: Number,
+      required: true,
+    },
+    isSyncing: {
+      type: Boolean,
+      required: false,
+    },
+    lastSynced: {
+      type: Date,
+      required: false,
+    },
+    debutDate: {
+      type: Date,
+      required: true,
+    },
   },
-  tlName: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  twitterLink: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  pictureUrl: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  tag: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  group: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  limit: {
-    type: Number,
-    required: true,
-  },
-  minFaves: {
-    type: Number,
-    required: true,
-  },
-  isSyncing: {
-    type: Boolean,
-    required: false,
-  },
-  lastSynced: {
-    type: Date,
-    required: false,
-  },
-  debutDate: {
-    type: Date,
-    required: false,
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 
 // add plugin that converts mongoose to json
 CharacterSchema.plugin(toJSON);

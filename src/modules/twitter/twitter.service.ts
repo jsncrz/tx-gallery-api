@@ -13,8 +13,6 @@ let rettiwt: Rettiwt;
 const rtwtInstances: Rettiwt[] = [];
 let tweetCounter = 0;
 
-let noAccountValid = false;
-
 const initializeService = () => {
   const cookies: string[] = config.twitterCookies.replaceAll("'", '').split(',');
   cookies.forEach((cookie) => {
@@ -72,7 +70,7 @@ const createTweetFromSearch = async (tweetResult: TwtObj) => {
 };
 
 const getTweetsFromTwitterApi = async (query: string, nextCursor?: string) => {
-  await new Promise((r) => setTimeout(r, 3000));
+  await new Promise((r) => setTimeout(r, 5000));
   let tweetBatch: CursoredData<TwtObj> | null = null;
   let tries = 0;
   while (tries < rtwtInstances.length) {
@@ -80,18 +78,28 @@ const getTweetsFromTwitterApi = async (query: string, nextCursor?: string) => {
       tweetBatch = await getRetwittInstance()!.tweet.search({ hashtags: [query] }, 20, nextCursor);
       break;
     } catch (error) {
-      logger.error(error);
       logger.error(`account#${tweetCounter} is rate limited`);
     }
     tries += 1;
+    if (tries === rtwtInstances.length) {
+      logger.error(`All account limited. Sleeping for 10 mins`);
+      await new Promise((r) => setTimeout(r, 1000 * 60 * 10));
+      tries = 0;
+    }
   }
   return tweetBatch;
 };
 
-const sinceDate = '2020-11-02';
-const untilDate = '2020-12-01';
-export const syncTweet = async (id: mongoose.Types.ObjectId, limit?: number, minFaves?: number) => {
+const syncTweet = async (
+  id: mongoose.Types.ObjectId,
+  limit?: number,
+  minFaves?: number,
+  sinceDate?: string,
+  untilDate?: string
+) => {
   const character = await Character.findByIdAndUpdate(id, { isSyncing: true, lastSynced: new Date() }).exec();
+  const since = sinceDate != null ? ` since:${sinceDate}` : '';
+  const until = untilDate != null ? ` until:${untilDate}` : '';
   if (character == null) {
     throw new Error();
   } else {
@@ -100,7 +108,7 @@ export const syncTweet = async (id: mongoose.Types.ObjectId, limit?: number, min
     let repeatedTweet = 0;
     const query = `${character.tag} min_faves:${
       minFaves !== undefined ? minFaves : character.minFaves
-    } filter:images since:${sinceDate} until:${untilDate}`;
+    } filter:images${since}${until}`;
     let prevCursor = null;
     do {
       const tweetBatch = await getTweetsFromTwitterApi(query, nextCursor);
@@ -110,58 +118,77 @@ export const syncTweet = async (id: mongoose.Types.ObjectId, limit?: number, min
       }
       prevCursor = nextCursor;
       if (tweetBatch == null) {
-        noAccountValid = true;
-        logger.error('Ran out of accounts to crawl!');
         return;
       }
-      logger.info(`finding tag: ${character.tag} page: ${i}`);
-      logger.info(tweetBatch.list.length);
+      logger.info(`finding tag: ${character.tag} page: ${i} size: ${tweetBatch.list.length}`);
       for await (const tweetObj of tweetBatch.list) {
         const oldTweet = await Tweet.findOne({ tweetId: tweetObj?.id }, { _id: 1 });
         repeatedTweet = oldTweet != null ? (repeatedTweet += 1) : (repeatedTweet = 0);
-        if (repeatedTweet === 5) {
-          logger.info('Repeated tweets are 5');
-          break;
-        }
         await createTweetFromSearch(tweetObj);
-      }
-      if (repeatedTweet === 5) {
-        break;
       }
       i += 1;
       nextCursor = tweetBatch.next.value;
-      logger.info(tweetBatch.list.length);
       if (nextCursor == null || tweetBatch.list.length < 20) {
         break;
       }
     } while (nextCursor !== undefined && i < (limit !== undefined ? limit : character.limit));
-    logger.info(`Finished crawling: ${character.tag}`);
   }
   Character.findByIdAndUpdate(id, { isSyncing: false }).exec();
 };
 
 export const syncAllTweets = async () => {
-  logger.info('Syncing all tweets');
-  if (noAccountValid) {
-    logger.info('No accounts are valid');
-    return;
-  }
-  const characters = await Character.find({}, { _id: 1, lastSynced: 1, debutDate: 1 });
+  const since = new Date(new Date().getTime() - 604800000);
+  const syncDate = new Date(new Date().getTime() - 86400000);
+  const characters = await Character.find(
+    { lastSynced: { $lt: syncDate } },
+    { tag: 1, group: 1, _id: 1, lastSynced: 1, debutDate: 1 }
+  );
+  const minFaves = [5000, 2000, 1000, 500, 200, 100];
   for (const character of characters) {
-    // if (
-    //   character.lastSynced == null ||
-    //   (character.lastSynced != null && new Date().getTime() - character.lastSynced.getTime() > 86400000 / 24)
-    // ) {
-    if (new Date(untilDate).getTime() > character.debutDate!.getTime()) await syncTweet(character._id);
-    // }
-    if (noAccountValid) {
-      break;
+    logger.info(`Crawling: ${character.tag}`);
+    for (let i = 0; i < minFaves.length; i += 1) {
+      if (character.group === 'Hololive' && minFaves[i] === 100) {
+        break;
+      }
+      logger.info(`Minimum Faves is ${minFaves[i]}`);
+      await syncTweet(character._id, 15, minFaves[i], `${since.getFullYear()}-${since.getMonth() + 1}-${since.getDate()}`);
     }
+    logger.info(`Finished crawling: ${character.tag}`);
   }
   logger.info('finished syncing all tweets');
 };
 
-export const deleteTweetFromTag = async (hashtag: string) => {
-  const tweets = await Tweet.deleteMany({ tags: hashtag });
-  return tweets;
+export const deepSyncTweet = async (id: mongoose.Types.ObjectId) => {
+  const until = new Date();
+  const since = new Date();
+  since.setMonth(until.getMonth() - 2);
+  const character = await Character.findById(id);
+  if (character == null) {
+    throw new Error();
+  }
+  const minFaves = [5000, 2000, 1000, 500, 200];
+  while (since.getTime() > character.debutDate!.getTime() - 1000 * 60 * 60 * 24 * 60) {
+    logger.info(
+      `Since: ${since.getFullYear()}-${since.getMonth() + 1}-${since.getDate()} until: ${until.getFullYear()}-${
+        until.getMonth() + 1
+      }-${until.getDate()}`
+    );
+    for (let i = 0; i < minFaves.length; i += 1) {
+      logger.info(`Minimum Faves is ${minFaves[i]}`);
+      await syncTweet(
+        character._id,
+        10,
+        minFaves[i],
+        `${since.getFullYear()}-${since.getMonth() + 1}-${since.getDate()}`,
+        `${until.getFullYear()}-${until.getMonth() + 1}-${until.getDate()}`
+      );
+    }
+    until.setMonth(until.getMonth() - 2);
+    since.setMonth(since.getMonth() - 2);
+  }
+  logger.info(`finished syncing ${character.tlName} tweets`);
+};
+
+export const deleteVideos = async () => {
+  await Tweet.deleteMany({ url: { $regex: /video/, $options: 'i' } });
 };

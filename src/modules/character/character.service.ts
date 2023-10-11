@@ -19,11 +19,11 @@ export const createCharacter = async (characterBody: any) => {
 };
 
 export const updateAllLimits = async (group: string, limit: number) => {
-  const tweets = await Character.updateMany({ group }, { limit });
-  return tweets;
+  const characters = await Character.updateMany({ group }, { limit });
+  return characters;
 };
 
 export const updateAllMinFaves = async (group: string, minFaves: number) => {
-  const tweets = await Character.updateMany({ group }, { minFaves });
-  return tweets;
+  const characters = await Character.updateMany({ group }, { minFaves });
+  return characters;
 };

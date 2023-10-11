@@ -22,19 +22,19 @@ export const getTweets = catchAsync(async (req: Request, res: Response) => {
   res.send(result);
 });
 
-export const syncTweet = catchAsync(async (req: Request, res: Response) => {
-  if (typeof req.params['characterId'] === 'string') {
-    const tweet = await twitterService.syncTweet(new mongoose.Types.ObjectId(req.params['characterId']), 10, 3000);
-    res.send(tweet);
-  }
-});
-
 export const syncAllTweets = catchAsync(async (_req: Request, res: Response) => {
   const tweets = await twitterService.syncAllTweets();
   res.send(tweets);
 });
 
-export const deleteTweetFromTag = catchAsync(async (req: Request, res: Response) => {
-  const tweet = await twitterService.deleteTweetFromTag(req.body.hashtag);
-  res.status(httpStatus.OK).send(JSON.stringify(tweet));
+export const deepSyncTweet = catchAsync(async (req: Request, res: Response) => {
+  if (typeof req.params['characterId'] === 'string') {
+    const tweet = await twitterService.deepSyncTweet(new mongoose.Types.ObjectId(req.params['characterId']));
+    res.send(tweet);
+  }
+});
+
+export const deleteVideos = catchAsync(async (_req: Request, res: Response) => {
+  await twitterService.deleteVideos();
+  res.sendStatus(httpStatus.OK);
 });

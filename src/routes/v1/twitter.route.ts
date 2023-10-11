@@ -8,7 +8,7 @@ router.post('/search', validate(twitterValidation.noValidation), twitterControll
 router.post('/create', validate(twitterValidation.createTweet), twitterController.createTweet);
 router.get('/getTweets', validate(twitterValidation.getTweets), twitterController.getTweets);
 router.post('/sync-all', validate(twitterValidation.noValidation), twitterController.syncAllTweets);
-router.post('/sync/:characterId', validate(twitterValidation.syncTweet), twitterController.syncTweet);
-router.post('/delete', validate(twitterValidation.noValidation), twitterController.deleteTweetFromTag);
+router.post('/sync/:characterId', validate(twitterValidation.syncTweet), twitterController.deepSyncTweet);
+router.post('/delete-video', validate(twitterValidation.noValidation), twitterController.deleteVideos);
 
 export default router;
