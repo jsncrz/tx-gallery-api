@@ -3,7 +3,8 @@ import toJSON from '../toJSON/toJSON';
 import paginate from '../paginate/paginate';
 import { ICharacterDoc, ICharacterModel } from './character.interfaces';
 
-const CharacterSchema = new mongoose.Schema<ICharacterDoc, ICharacterModel>({
+const CharacterSchema = new mongoose.Schema<ICharacterDoc, ICharacterModel>(
+  {
     name: {
       type: String,
       required: true,

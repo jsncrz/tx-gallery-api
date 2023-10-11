@@ -137,17 +137,17 @@ const syncTweet = async (
 };
 
 export const syncAllTweets = async () => {
-  const since = new Date(new Date().getTime() - 604800000);
-  const syncDate = new Date(new Date().getTime() - 86400000);
+  const since = new Date(new Date().getTime() - 259200000);
+  const syncDate = new Date(new Date().getTime() - 6400000);
   const characters = await Character.find(
     { lastSynced: { $lt: syncDate } },
-    { tag: 1, group: 1, _id: 1, lastSynced: 1, debutDate: 1 }
+    { tag: 1, group: 1, _id: 1, lastSynced: 1, debutDate: 1, minFaves: 1 }
   );
   const minFaves = [5000, 2000, 1000, 500, 200, 100];
   for (const character of characters) {
     logger.info(`Crawling: ${character.tag}`);
     for (let i = 0; i < minFaves.length; i += 1) {
-      if (character.group === 'Hololive' && minFaves[i] === 100) {
+      if (minFaves[i]! < character.minFaves) {
         break;
       }
       logger.info(`Minimum Faves is ${minFaves[i]}`);
@@ -175,13 +175,15 @@ export const deepSyncTweet = async (id: mongoose.Types.ObjectId) => {
     );
     for (let i = 0; i < minFaves.length; i += 1) {
       logger.info(`Minimum Faves is ${minFaves[i]}`);
-      await syncTweet(
-        character._id,
-        10,
-        minFaves[i],
-        `${since.getFullYear()}-${since.getMonth() + 1}-${since.getDate()}`,
-        `${until.getFullYear()}-${until.getMonth() + 1}-${until.getDate()}`
-      );
+      if (minFaves[i]! >= character.minFaves) {
+        await syncTweet(
+          character._id,
+          10,
+          minFaves[i],
+          `${since.getFullYear()}-${since.getMonth() + 1}-${since.getDate()}`,
+          `${until.getFullYear()}-${until.getMonth() + 1}-${until.getDate()}`
+        );
+      }
     }
     until.setMonth(until.getMonth() - 2);
     since.setMonth(since.getMonth() - 2);
