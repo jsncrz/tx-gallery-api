@@ -24,7 +24,7 @@ services:
     environment:
       - MONGODB_URL=mongodb://mongo:27017/node-boilerplate
       - CLIENT_URL=${CLIENT_URL}
-      - COOKIES=${COOKIES}
+      - TWITTER_COOKIES=${TWITTER_COOKIES}
     links:
       - mongo
     depends_on:
