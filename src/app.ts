@@ -5,8 +5,11 @@ import ExpressMongoSanitize from 'express-mongo-sanitize';
 import compression from 'compression';
 import cors from 'cors';
 import httpStatus from 'http-status';
+import passport from 'passport';
 import { ApiError, errorConverter, errorHandler } from './modules/errors';
 import routes from './routes/v1';
+import SyncJob from './modules/scheduled';
+import { jwtStrategy } from './modules/auth';
 
 const app: Express = express();
 
@@ -30,6 +33,10 @@ app.use(ExpressMongoSanitize());
 // gzip compression
 app.use(compression());
 
+// jwt authentication
+app.use(passport.initialize());
+passport.use('jwt', jwtStrategy);
+
 // v1 api routes
 app.use('/api/v1', routes);
 
@@ -43,5 +50,7 @@ app.use(errorConverter);
 
 // handle error
 app.use(errorHandler);
+
+SyncJob.startJob();
 
 export default app;
