@@ -105,14 +105,12 @@ const syncTweet = async (
   } else {
     let nextCursor: string | undefined;
     let i = 0;
-    let repeatedTweet = 0;
     const query = `${character.tag} min_faves:${
       minFaves !== undefined ? minFaves : character.minFaves
     } filter:images${since}${until}`;
     let prevCursor = null;
     do {
       const tweetBatch = await getTweetsFromTwitterApi(query, nextCursor);
-      repeatedTweet = 0;
       if (prevCursor === nextCursor) {
         break;
       }
@@ -122,8 +120,6 @@ const syncTweet = async (
       }
       logger.info(`finding tag: ${character.tag} page: ${i} size: ${tweetBatch.list.length}`);
       for await (const tweetObj of tweetBatch.list) {
-        const oldTweet = await Tweet.findOne({ tweetId: tweetObj?.id }, { _id: 1 });
-        repeatedTweet = oldTweet != null ? (repeatedTweet += 1) : (repeatedTweet = 0);
         await createTweetFromSearch(tweetObj);
       }
       i += 1;
@@ -150,7 +146,6 @@ export const syncAllTweets = async () => {
       if (minFaves[i]! < character.minFaves) {
         break;
       }
-      logger.info(`Minimum Faves is ${minFaves[i]}`);
       await syncTweet(character._id, 15, minFaves[i], `${since.getFullYear()}-${since.getMonth() + 1}-${since.getDate()}`);
     }
     logger.info(`Finished crawling: ${character.tag}`);
@@ -166,7 +161,7 @@ export const deepSyncTweet = async (id: mongoose.Types.ObjectId) => {
   if (character == null) {
     throw new Error();
   }
-  const minFaves = [5000, 2000, 1000, 500, 200];
+  const minFaves = [5000, 2000, 1000, 500, 200, 100];
   while (since.getTime() > character.debutDate!.getTime() - 1000 * 60 * 60 * 24 * 60) {
     logger.info(
       `Since: ${since.getFullYear()}-${since.getMonth() + 1}-${since.getDate()} until: ${until.getFullYear()}-${
