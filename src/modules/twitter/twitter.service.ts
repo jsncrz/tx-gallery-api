@@ -9,7 +9,6 @@ import Tweet from './twitter.model';
 import { IOptions, QueryResult } from '../paginate/paginate';
 import Character from '../character/character.model';
 
-let rettiwt: Rettiwt;
 const rtwtInstances: Rettiwt[] = [];
 let tweetCounter = 0;
 
@@ -27,22 +26,6 @@ const getRetwittInstance = (): Rettiwt | undefined => {
 };
 
 initializeService();
-
-export const searchTwitterByFilter = async (hashtag: string) => {
-  return rettiwt.tweet
-    .search({
-      hashtags: [hashtag],
-    })
-    .then((data: CursoredData<TwtObj>) => {
-      logger.info(JSON.stringify(data));
-      return data;
-    })
-    .catch((err: Error) => {
-      logger.error(err);
-      logger.error(JSON.stringify(err));
-      return err;
-    });
-};
 
 export const createTweet = async (tweetBody: any) => {
   return Tweet.findOneAndUpdate({ tweetId: tweetBody.tweetId }, tweetBody, {

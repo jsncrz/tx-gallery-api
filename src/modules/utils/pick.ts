@@ -1,3 +1,5 @@
+import escapeRegex from './escapeRegex';
+
 /**
  * Create an object composed of the picked object properties
  * @param {Record<string, any>} object
@@ -17,7 +19,7 @@ const pick = (object: Record<string, any>, keys: string[], wildCardKeys?: string
     filter = wildCardKeys.reduce((obj2: any, key: string) => {
       if (object && Object.prototype.hasOwnProperty.call(object, key)) {
         // eslint-disable-next-line security/detect-non-literal-regexp
-        const objectRegex = new RegExp(object[key], 'i');
+        const objectRegex = new RegExp(escapeRegex(object[key]), 'i');
         // eslint-disable-next-line no-param-reassign,
         obj2[key] = objectRegex;
       }
