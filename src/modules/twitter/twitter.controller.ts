@@ -5,11 +5,6 @@ import * as twitterService from './twitter.service';
 import { catchAsync, pick } from '../utils';
 import { IOptions } from '../paginate/paginate';
 
-export const searchTwitter = catchAsync(async (req: Request, res: Response) => {
-  const tweet = await twitterService.searchTwitterByFilter(req.body.hashtag);
-  res.status(httpStatus.OK).send(JSON.stringify(tweet));
-});
-
 export const createTweet = catchAsync(async (req: Request, res: Response) => {
   const tweet = await twitterService.createTweet(req.body);
   res.status(httpStatus.CREATED).send(tweet);

@@ -1,4 +1,5 @@
 import { IOptions, QueryResult } from '../paginate/paginate';
+import escapeRegex from '../utils/escapeRegex';
 import Character from './character.model';
 
 export const getCharacters = async (filter: Record<string, any>, options: IOptions): Promise<QueryResult> => {
@@ -6,8 +7,17 @@ export const getCharacters = async (filter: Record<string, any>, options: IOptio
   return characters;
 };
 
-export const getTagsByName = async (name: string) => {
-  const tags = await Character.find({ tlName: { $regex: name, $options: 'i' } }, { name: 1, tlName: 1, tag: 1 });
+export const getCharactersByName = async (name: string, group: string) => {
+  const tags = await Character.find(
+    {
+      $or: [
+        { name: { $regex: escapeRegex(name), $options: 'i' } },
+        { tlName: { $regex: escapeRegex(name), $options: 'i' } },
+      ],
+      group: { $regex: group, $options: 'i' },
+    },
+    { name: 1, tlName: 1, tag: 1 }
+  );
   return tags;
 };
 

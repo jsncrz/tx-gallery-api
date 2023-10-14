@@ -11,12 +11,16 @@ export const getCharacters = catchAsync(async (req: Request, res: Response) => {
   res.status(httpStatus.OK).send(JSON.stringify(result));
 });
 
-export const getTagsByName = catchAsync(async (req: Request, res: Response) => {
+export const getCharactersByName = catchAsync(async (req: Request, res: Response) => {
   let name = '';
+  let group = '';
   if (req.query && req.query['name']) {
     name = req.query['name'].toString();
   }
-  const result = await characterService.getTagsByName(name);
+  if (req.query && req.query['group']) {
+    group = req.query['group'].toString();
+  }
+  const result = await characterService.getCharactersByName(name, group);
   res.status(httpStatus.OK).send(JSON.stringify(result));
 });
 

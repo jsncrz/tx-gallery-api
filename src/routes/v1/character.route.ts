@@ -6,7 +6,11 @@ import { auth } from '../../modules/auth';
 const router: Router = express.Router();
 
 router.get('/', validate(characterValidation.getCharacters), characterController.getCharacters);
-router.get('/getTagsByName', validate(characterValidation.getTagsByName), characterController.getTagsByName);
+router.get(
+  '/getCharactersByName',
+  validate(characterValidation.getCharactersByName),
+  characterController.getCharactersByName
+);
 router
   .route('/')
   .post(auth('updateCharacter'), validate(characterValidation.createCharacter), characterController.createCharacter);

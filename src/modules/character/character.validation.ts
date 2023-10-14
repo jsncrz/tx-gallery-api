@@ -34,8 +34,9 @@ export const getCharacters = {
   }),
 };
 
-export const getTagsByName = {
+export const getCharactersByName = {
   query: Joi.object().keys({
     name: Joi.string().allow(''),
+    group: Joi.string().allow(''),
   }),
 };

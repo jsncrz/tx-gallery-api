@@ -5,7 +5,6 @@ import { auth } from '../../modules/auth';
 
 const router: Router = express.Router();
 
-router.post('/search', validate(twitterValidation.noValidation), twitterController.searchTwitter);
 router.get('/getTweets', validate(twitterValidation.getTweets), twitterController.getTweets);
 router.route('/create').post(auth('modifyTweet'), validate(twitterValidation.createTweet), twitterController.createTweet);
 router
