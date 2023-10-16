@@ -34,9 +34,14 @@ export const createTweet = async (tweetBody: any) => {
   });
 };
 
-export const queryTweets = async (filter: Record<string, any>, options: IOptions): Promise<QueryResult> => {
-  const users = await Tweet.paginate(filter, options);
-  return users;
+export const queryTweets = async (filter: Record<string, any>, options: IOptions, group?: string): Promise<QueryResult> => {
+  if (filter['tags'] == null && group != null && group !== '') {
+    const characters = await Character.find({ group }, { tag: 1 });
+    const tags = characters.map((character) => character.tag);
+    filter['tags'] = { $in: tags };
+  }
+  const tweets = await Tweet.paginate(filter, options);
+  return tweets;
 };
 
 const initFromTweetResult = (tweetResult: TwtObj) => ({
