@@ -11,9 +11,13 @@ export const createTweet = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const getTweets = catchAsync(async (req: Request, res: Response) => {
+  let group: string | undefined;
   const filter = pick(req.query, ['tags']);
   const options: IOptions = pick(req.query, ['sortBy', 'limit', 'page', 'projectBy']);
-  const result = await twitterService.queryTweets(filter, options);
+  if (req.query && req.query['group']) {
+    group = req.query['group'].toString();
+  }
+  const result = await twitterService.queryTweets(filter, options, group);
   res.send(result);
 });
 
