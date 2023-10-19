@@ -21,8 +21,8 @@ export const getTweets = catchAsync(async (req: Request, res: Response) => {
   res.send(result);
 });
 
-export const syncAllTweets = catchAsync(async (_req: Request, res: Response) => {
-  const tweets = await twitterService.syncAllTweets();
+export const syncCharactersTweets = catchAsync(async (_req: Request, res: Response) => {
+  const tweets = await twitterService.syncCharactersTweets();
   res.send(tweets);
 });
 
