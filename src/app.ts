@@ -52,6 +52,6 @@ app.use(errorConverter);
 app.use(errorHandler);
 
 SyncJob.syncAllCharactersTweets();
-SyncJob.resyncTweets();
+// SyncJob.resyncTweets();
 
 export default app;
