@@ -2,9 +2,16 @@ import schedule from 'node-schedule';
 import { twitterService } from '../twitter';
 
 class SyncJob {
-  static startJob() {
+  static syncAllCharactersTweets() {
     schedule.scheduleJob('0 */4 * * *', function () {
-      twitterService.syncAllTweets();
+      twitterService.syncCharactersTweets();
+    });
+  }
+
+  static resyncTweets() {
+    // schedule.scheduleJob('30 2 * * *', function () {
+    schedule.scheduleJob('* * * * *', function () {
+      twitterService.recheckTweet();
     });
   }
 }

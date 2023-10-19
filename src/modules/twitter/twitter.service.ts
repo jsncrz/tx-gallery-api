@@ -120,14 +120,14 @@ const syncTweet = async (
   Character.findByIdAndUpdate(id, { isSyncing: false }).exec();
 };
 
-export const syncAllTweets = async () => {
+export const syncCharactersTweets = async () => {
   const since = new Date(new Date().getTime() - 259200000);
   const syncDate = new Date(new Date().getTime() - 6400000);
   const characters = await Character.find(
     { lastSynced: { $lt: syncDate } },
     { tag: 1, group: 1, _id: 1, lastSynced: 1, debutDate: 1, minFaves: 1 }
   );
-  const minFaves = [5000, 2000, 1000, 500, 200, 100];
+  const minFaves = [2000, 1000, 500, 200, 100, 50];
   for (const character of characters) {
     logger.info(`Crawling: ${character.tag}`);
     for (let i = 0; i < minFaves.length; i += 1) {
@@ -176,4 +176,17 @@ export const deepSyncTweet = async (id: mongoose.Types.ObjectId) => {
 
 export const deleteVideos = async () => {
   await Tweet.deleteMany({ url: { $regex: /video/, $options: 'i' } });
+};
+
+export const recheckTweet = async () => {
+  // Todo: implement this once library updates details without APIkey
+  // const dateLimit = new Date();
+  // dateLimit.setMonth(dateLimit.getMonth() - 2);
+  // const tweets = await Tweet.find({ postDate: { $gt: dateLimit } }, { postDate: 1, tweetId: 1, likeCount: 1 });
+  // const rettiwt = Rettiwt();
+  // for (const tweet of tweets) {
+  //   const tweetObject = await rettiwt.tweet.details(tweet.tweetId);
+  //   logger.info(tweetObject);
+  //   logger.info(tweet);
+  // }
 };
