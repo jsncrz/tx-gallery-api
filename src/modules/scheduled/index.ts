@@ -9,8 +9,7 @@ class SyncJob {
   }
 
   static resyncTweets() {
-    // schedule.scheduleJob('30 2 * * *', function () {
-    schedule.scheduleJob('* * * * *', function () {
+    schedule.scheduleJob('30 2 * * *', function () {
       twitterService.recheckTweet();
     });
   }

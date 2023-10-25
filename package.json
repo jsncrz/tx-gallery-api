@@ -119,7 +119,7 @@
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.0",
     "pm2": "^5.1.2",
-    "rettiwt-api": "^2.2.2",
+    "rettiwt-api": "^2.3.0",
     "validator": "^13.7.0",
     "winston": "^3.3.3",
     "xss-clean": "^0.1.1"

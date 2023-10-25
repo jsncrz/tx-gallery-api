@@ -1,13 +1,15 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable no-promise-executor-return */
 /* eslint-disable no-await-in-loop */
-import { CursoredData, Rettiwt, Tweet as TwtObj } from 'rettiwt-api';
+import { Rettiwt } from 'rettiwt-api';
 import mongoose from 'mongoose';
 import config from '../../config/config';
 import { logger } from '../logger';
 import Tweet from './twitter.model';
 import { IOptions, QueryResult } from '../paginate/paginate';
 import Character from '../character/character.model';
+import { CursoredData } from 'rettiwt-api/dist/models/public/CursoredData';
+import { Tweet as TwtObj } from 'rettiwt-api/dist/models/public/Tweet';
 
 const rtwtInstances: Rettiwt[] = [];
 let tweetCounter = 0;
@@ -15,7 +17,7 @@ let tweetCounter = 0;
 const initializeService = () => {
   const cookies: string[] = config.twitterCookies.replaceAll("'", '').split(',');
   cookies.forEach((cookie) => {
-    rtwtInstances.push(new Rettiwt(cookie));
+    rtwtInstances.push(new Rettiwt({ apiKey: cookie }));
   });
 };
 
@@ -179,14 +181,13 @@ export const deleteVideos = async () => {
 };
 
 export const recheckTweet = async () => {
-  // Todo: implement this once library updates details without APIkey
-  // const dateLimit = new Date();
-  // dateLimit.setMonth(dateLimit.getMonth() - 2);
-  // const tweets = await Tweet.find({ postDate: { $gt: dateLimit } }, { postDate: 1, tweetId: 1, likeCount: 1 });
-  // const rettiwt = Rettiwt();
-  // for (const tweet of tweets) {
-  //   const tweetObject = await rettiwt.tweet.details(tweet.tweetId);
-  //   logger.info(tweetObject);
-  //   logger.info(tweet);
-  // }
+  const dateLimit = new Date();
+  dateLimit.setMonth(dateLimit.getMonth() - 1);
+  const tweets = await Tweet.find({ postDate: { $gt: dateLimit } }, { postDate: 1, tweetId: 1, likeCount: 1 });
+  const rettiwt = new Rettiwt();
+  for (const tweet of tweets) {
+    const tweetObject = await rettiwt.tweet.details(tweet.tweetId);
+    tweet.likeCount = tweetObject.likeCount;
+    tweet.save();
+  }
 };
