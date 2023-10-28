@@ -1,18 +1,19 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable no-promise-executor-return */
 /* eslint-disable no-await-in-loop */
-import { Rettiwt } from 'rettiwt-api';
 import mongoose from 'mongoose';
-import config from '../../config/config';
-import { logger } from '../logger';
-import Tweet from './twitter.model';
-import { IOptions, QueryResult } from '../paginate/paginate';
-import Character from '../character/character.model';
+import { Rettiwt } from 'rettiwt-api';
 import { CursoredData } from 'rettiwt-api/dist/models/public/CursoredData';
 import { Tweet as TwtObj } from 'rettiwt-api/dist/models/public/Tweet';
+import config from '../../config/config';
+import Character from '../character/character.model';
+import { logger } from '../logger';
+import { IOptions, QueryResult } from '../paginate/paginate';
+import Tweet from './twitter.model';
 
 const rtwtInstances: Rettiwt[] = [];
 let tweetCounter = 0;
+let tweetRetry = 0;
 
 const initializeService = () => {
   const cookies: string[] = config.twitterCookies.replaceAll("'", '').split(',');
@@ -63,18 +64,19 @@ const getTweetsFromTwitterApi = async (query: string, nextCursor?: string) => {
   await new Promise((r) => setTimeout(r, 5000));
   let tweetBatch: CursoredData<TwtObj> | null = null;
   let tries = 0;
-  while (tries < rtwtInstances.length) {
+  while (tries < rtwtInstances.length && tweetRetry < 2) {
     try {
       tweetBatch = await getRetwittInstance()!.tweet.search({ hashtags: [query] }, 20, nextCursor);
       break;
     } catch (error) {
-      logger.error(`account#${tweetCounter} is rate limited`);
+      logger.error(error);
     }
     tries += 1;
     if (tries === rtwtInstances.length) {
+      tries = 0;
+      tweetRetry += 1;
       logger.error(`All account limited. Sleeping for 10 mins`);
       await new Promise((r) => setTimeout(r, 1000 * 60 * 10));
-      tries = 0;
     }
   }
   return tweetBatch;
@@ -123,6 +125,7 @@ const syncTweet = async (
 };
 
 export const syncCharactersTweets = async () => {
+  tweetRetry = 0;
   const since = new Date(new Date().getTime() - 259200000);
   const syncDate = new Date(new Date().getTime() - 6400000);
   const characters = await Character.find(
@@ -131,6 +134,10 @@ export const syncCharactersTweets = async () => {
   );
   const minFaves = [2000, 1000, 500, 200, 100, 50];
   for (const character of characters) {
+    if (tweetRetry === 2) {
+      logger.error('Too many retries. Stopping sync!');
+      break;
+    }
     logger.info(`Crawling: ${character.tag}`);
     for (let i = 0; i < minFaves.length; i += 1) {
       if (minFaves[i]! < character.minFaves) {
