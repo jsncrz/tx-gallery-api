@@ -11,9 +11,7 @@ router.get(
   validate(characterValidation.getCharactersByName),
   characterController.getCharactersByName
 );
-router
-  .route('/')
-  .post(auth('updateCharacter'), validate(characterValidation.createCharacter), characterController.createCharacter);
+router.post('/', validate(characterValidation.createCharacter), characterController.createCharacter);
 router
   .route('/update-limit')
   .post(auth('updateCharacter'), validate(characterValidation.noValidation), characterController.updateAllLimits);

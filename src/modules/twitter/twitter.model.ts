@@ -32,6 +32,12 @@ const tweetSchema = new mongoose.Schema<ITweetDoc, ITweetModel>(
       type: Date,
       required: true,
     },
+    characters: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'characters',
+      },
+    ],
   },
   {
     timestamps: true,

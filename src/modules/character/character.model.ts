@@ -30,6 +30,12 @@ const CharacterSchema = new mongoose.Schema<ICharacterDoc, ICharacterModel>(
       required: true,
       trim: true,
     },
+    otherTags: [
+      {
+        type: String,
+        required: true,
+      },
+    ],
     group: {
       type: String,
       required: true,

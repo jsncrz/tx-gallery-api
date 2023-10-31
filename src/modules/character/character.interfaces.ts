@@ -7,6 +7,7 @@ export interface ICharacter {
   twitterLink: string;
   pictureUrl: string;
   tag: string;
+  otherTags?: Array<string>;
   group: string;
   limit: number;
   minFaves: number;

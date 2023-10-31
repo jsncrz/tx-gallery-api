@@ -5,14 +5,14 @@ import * as twitterService from './twitter.service';
 import { catchAsync, pick } from '../utils';
 import { IOptions } from '../paginate/paginate';
 
-export const createTweet = catchAsync(async (req: Request, res: Response) => {
-  const tweet = await twitterService.createTweet(req.body);
-  res.status(httpStatus.CREATED).send(tweet);
+// TODO: Add body to include tweet link and character id
+export const createTweet = catchAsync(async (_req: Request, res: Response) => {
+  res.status(httpStatus.CREATED);
 });
 
 export const getTweets = catchAsync(async (req: Request, res: Response) => {
   let group: string | undefined;
-  const filter = pick(req.query, ['tags']);
+  const filter = pick(req.query, [], ['tags']);
   const options: IOptions = pick(req.query, ['sortBy', 'limit', 'page', 'projectBy']);
   if (req.query && req.query['group']) {
     group = req.query['group'].toString();
@@ -33,7 +33,7 @@ export const deepSyncTweet = catchAsync(async (req: Request, res: Response) => {
   }
 });
 
-export const deleteVideos = catchAsync(async (_req: Request, res: Response) => {
-  await twitterService.deleteVideos();
+export const fixTags = catchAsync(async (_req: Request, res: Response) => {
+  await twitterService.fixTags();
   res.sendStatus(httpStatus.OK);
 });

@@ -9,6 +9,7 @@ const createTweetBody: Record<keyof NewCreatedTweet, any> = {
   url: Joi.string().required(),
   likeCount: Joi.number().required(),
   postDate: Joi.date().required(),
+  characters: Joi.array().allow(''),
 };
 
 export const noValidation = {

@@ -6,6 +6,7 @@ import { Rettiwt } from 'rettiwt-api';
 import { CursoredData } from 'rettiwt-api/dist/models/public/CursoredData';
 import { Tweet as TwtObj } from 'rettiwt-api/dist/models/public/Tweet';
 import config from '../../config/config';
+import { ICharacterDoc } from '../character/character.interfaces';
 import Character from '../character/character.model';
 import { logger } from '../logger';
 import { IOptions, QueryResult } from '../paginate/paginate';
@@ -30,34 +31,43 @@ const getRetwittInstance = (): Rettiwt | undefined => {
 
 initializeService();
 
-export const createTweet = async (tweetBody: any) => {
-  return Tweet.findOneAndUpdate({ tweetId: tweetBody.tweetId }, tweetBody, {
-    new: true,
-    upsert: true,
-  });
+const upsertTweet = async (tweetBody: any, character: ICharacterDoc) => {
+  const tweet = await Tweet.findOne({ tweetId: tweetBody.tweetId });
+  if (tweet != null) {
+    if (tweet.characters.indexOf(character) !== -1) {
+      tweet.characters.push(character);
+    }
+    tweet.likeCount = tweetBody.likeCount;
+    tweet.tags = tweetBody.tags;
+    return tweet.save();
+  }
+  return Tweet.create(tweetBody);
 };
 
 export const queryTweets = async (filter: Record<string, any>, options: IOptions, group?: string): Promise<QueryResult> => {
   if (filter['tags'] == null && group != null && group !== '') {
-    const characters = await Character.find({ group }, { tag: 1 });
+    const characters = await Character.find({ group }, { tag: 1, otherTags: 1 });
     const tags = characters.map((character) => character.tag);
-    filter['tags'] = { $in: tags };
+    const otherTags = characters.flatMap((character) => (character.otherTags != null ? character.otherTags : []));
+    const allTags = [...tags, ...otherTags];
+    filter['tags'] = { $in: allTags };
   }
   const tweets = await Tweet.paginate(filter, options);
   return tweets;
 };
 
-const initFromTweetResult = (tweetResult: TwtObj) => ({
+const initFromTweetResult = (tweetResult: TwtObj, character: ICharacterDoc) => ({
   tweetId: tweetResult.id,
   tags: tweetResult.entities.hashtags,
   user: tweetResult.tweetBy.userName,
   url: tweetResult.media[0]?.url,
   likeCount: tweetResult.likeCount,
   postDate: tweetResult.createdAt,
+  characters: [character],
 });
 
-const createTweetFromSearch = async (tweetResult: TwtObj) => {
-  return createTweet(initFromTweetResult(tweetResult));
+const createTweetFromSearch = async (tweetResult: TwtObj, character: ICharacterDoc) => {
+  return upsertTweet(initFromTweetResult(tweetResult, character), character);
 };
 
 const getTweetsFromTwitterApi = async (query: string, nextCursor?: string) => {
@@ -89,7 +99,10 @@ const syncTweet = async (
   sinceDate?: string,
   untilDate?: string
 ) => {
-  const character = await Character.findByIdAndUpdate(id, { isSyncing: true, lastSynced: new Date() }).exec();
+  const character: ICharacterDoc | null = await Character.findByIdAndUpdate(id, {
+    isSyncing: true,
+    lastSynced: new Date(),
+  }).exec();
   const since = sinceDate != null ? ` since:${sinceDate}` : '';
   const until = untilDate != null ? ` until:${untilDate}` : '';
   if (character == null) {
@@ -112,7 +125,7 @@ const syncTweet = async (
       }
       logger.info(`finding tag: ${character.tag} page: ${i} size: ${tweetBatch.list.length}`);
       for await (const tweetObj of tweetBatch.list) {
-        await createTweetFromSearch(tweetObj);
+        await createTweetFromSearch(tweetObj, character);
       }
       i += 1;
       nextCursor = tweetBatch.next.value;
@@ -183,8 +196,19 @@ export const deepSyncTweet = async (id: mongoose.Types.ObjectId) => {
   logger.info(`finished syncing ${character.tlName} tweets`);
 };
 
-export const deleteVideos = async () => {
-  await Tweet.deleteMany({ url: { $regex: /video/, $options: 'i' } });
+export const fixTags = async () => {
+  const characters = await Character.find({}, { tlName: 1, _id: 1, tag: 1, otherTags: 1 });
+  for (const character of characters) {
+    const tags = [character.tag];
+    if (character.otherTags != null) {
+      tags.push(...character.otherTags);
+    }
+    logger.info(`processing ${character.tlName}`);
+    await Tweet.updateMany({ tags: { $in: tags } }, { $push: { characters: character._id } });
+    logger.info(`finished processing ${character.tlName}`);
+  }
+  logger.info(`finished fixing tags`);
+  // const tweets = await Tweet.find({ postDate: { $gt: dateLimit } }, { postDate: 1, tweetId: 1, likeCount: 1 });
 };
 
 export const recheckTweet = async () => {
