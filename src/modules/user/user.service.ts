@@ -1,9 +1,9 @@
 import httpStatus from 'http-status';
 import mongoose from 'mongoose';
-import User from './user.model';
 import ApiError from '../errors/ApiError';
 import { IOptions, QueryResult } from '../paginate/paginate';
-import { NewCreatedUser, UpdateUserBody, IUserDoc, NewRegisteredUser } from './user.interfaces';
+import { IUserDoc, NewCreatedUser, UpdateUserBody } from './user.interfaces';
+import User from './user.model';
 
 /**
  * Create a user
@@ -22,10 +22,11 @@ export const createUser = async (userBody: NewCreatedUser): Promise<IUserDoc> =>
  * @param {NewRegisteredUser} userBody
  * @returns {Promise<IUserDoc>}
  */
-export const registerUser = async (userBody: NewRegisteredUser): Promise<IUserDoc> => {
+export const registerUser = async (userBody: NewCreatedUser): Promise<IUserDoc> => {
   if (await User.isEmailTaken(userBody.email)) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
   }
+  userBody.role = 'user';
   return User.create(userBody);
 };
 

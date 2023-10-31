@@ -17,6 +17,7 @@ const createCharacterBody: Record<keyof NewCreatedCharacter, any> = {
   isSyncing: Joi.boolean().allow(''),
   lastSynced: Joi.date().allow(''),
   debutDate: Joi.date().required(),
+  otherTags: Joi.array().allow(''),
 };
 
 export const createCharacter = {

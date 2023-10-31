@@ -10,6 +10,7 @@ import { ApiError, errorConverter, errorHandler } from './modules/errors';
 import routes from './routes/v1';
 import SyncJob from './modules/scheduled';
 import { jwtStrategy } from './modules/auth';
+import config from './config/config';
 
 const app: Express = express();
 
@@ -51,7 +52,9 @@ app.use(errorConverter);
 // handle error
 app.use(errorHandler);
 
-SyncJob.syncAllCharactersTweets();
-SyncJob.resyncTweets();
+if (config.env === 'production') {
+  SyncJob.syncAllCharactersTweets();
+  SyncJob.resyncTweets();
+}
 
 export default app;

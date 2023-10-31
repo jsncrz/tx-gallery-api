@@ -1,6 +1,8 @@
 import express, { Router } from 'express';
 import twitterRoute from './twitter.route';
 import characterRoute from './character.route';
+import authRoute from './auth.route';
+import userRoute from './user.route';
 
 const router = express.Router();
 
@@ -17,6 +19,14 @@ const defaultIRoute: IRoute[] = [
   {
     path: '/character',
     route: characterRoute,
+  },
+  {
+    path: '/auth',
+    route: authRoute,
+  },
+  {
+    path: '/user',
+    route: userRoute,
   },
 ];
 

@@ -13,8 +13,6 @@ router
 router
   .route('/sync/:characterId')
   .post(auth('modifyTweet'), validate(twitterValidation.syncTweet), twitterController.deepSyncTweet);
-router
-  .route('/delete-video')
-  .delete(auth('modifyTweet'), validate(twitterValidation.noValidation), twitterController.deleteVideos);
+router.route('/fix-tags').post(auth('modifyTweet'), validate(twitterValidation.noValidation), twitterController.fixTags);
 
 export default router;
