@@ -12,12 +12,17 @@ export const createTweet = catchAsync(async (_req: Request, res: Response) => {
 
 export const getTweets = catchAsync(async (req: Request, res: Response) => {
   let group: string | undefined;
-  const filter = pick(req.query, [], ['tags']);
+  const filter = pick(req.query, [], [], ['characters']);
   const options: IOptions = pick(req.query, ['sortBy', 'limit', 'page', 'projectBy']);
   if (req.query && req.query['group']) {
     group = req.query['group'].toString();
   }
-  const result = await twitterService.queryTweets(filter, options, group);
+  const result = await twitterService.queryTweets(
+    filter,
+    options,
+    group,
+    req.query && req.query['tags'] ? req.query['tags'].toString() : undefined
+  );
   res.send(result);
 });
 

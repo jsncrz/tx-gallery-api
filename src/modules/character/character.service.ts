@@ -16,7 +16,7 @@ export const getCharactersByName = async (name: string, group: string) => {
       ],
       group: { $regex: group, $options: 'i' },
     },
-    { name: 1, tlName: 1, tag: 1, group: 1 }
+    { _id: 1, name: 1, tlName: 1, tag: 1, group: 1 }
   );
   return tags;
 };

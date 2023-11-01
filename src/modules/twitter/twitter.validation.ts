@@ -23,6 +23,7 @@ export const createTweet = {
 export const getTweets = {
   query: Joi.object().keys({
     tags: Joi.string().allow(''),
+    characters: Joi.string().allow(''),
     group: Joi.string().allow(''),
     sortBy: Joi.string(),
     projectBy: Joi.string(),

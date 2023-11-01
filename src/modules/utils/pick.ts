@@ -1,12 +1,15 @@
+import mongoose from 'mongoose';
 import escapeRegex from './escapeRegex';
 
 /**
  * Create an object composed of the picked object properties
  * @param {Record<string, any>} object
  * @param {string[]} keys
+ * @param {string[]} wildCardKeys
+ * @param {string[]} objectIdKeys
  * @returns {Object}
  */
-const pick = (object: Record<string, any>, keys: string[], wildCardKeys?: string[]) => {
+const pick = (object: Record<string, any>, keys: string[], wildCardKeys?: string[], objectIdKeys?: string[]) => {
   let filter: Record<string, any> = {};
   filter = keys.reduce((obj: any, key: string) => {
     if (object && Object.prototype.hasOwnProperty.call(object, key)) {
@@ -24,6 +27,14 @@ const pick = (object: Record<string, any>, keys: string[], wildCardKeys?: string
         obj2[key] = objectRegex;
       }
       return obj2;
+    }, filter);
+  }
+  if (objectIdKeys != null) {
+    filter = objectIdKeys.reduce((obj3: any, key: string) => {
+      if (object && Object.prototype.hasOwnProperty.call(object, key)) {
+        obj3[key] = new mongoose.Types.ObjectId(object[key]);
+      }
+      return obj3;
     }, filter);
   }
   return filter;
