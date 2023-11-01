@@ -106,7 +106,6 @@ const getTweetsFromTwitterApi = async (query: string, nextCursor?: string) => {
 
 const syncTweet = async (
   id: mongoose.Types.ObjectId,
-  limit?: number,
   minFaves?: number,
   sinceDate?: string,
   untilDate?: string
@@ -168,7 +167,7 @@ export const syncCharactersTweets = async () => {
       if (minFaves[i]! < character.minFaves) {
         break;
       }
-      await syncTweet(character._id, 15, minFaves[i], `${since.getFullYear()}-${since.getMonth() + 1}-${since.getDate()}`);
+      await syncTweet(character._id, minFaves[i], `${since.getFullYear()}-${since.getMonth() + 1}-${since.getDate()}`);
     }
     logger.info(`Finished crawling: ${character.tag}`);
   }
@@ -195,7 +194,6 @@ export const deepSyncTweet = async (id: mongoose.Types.ObjectId) => {
       if (minFaves[i]! >= character.minFaves) {
         await syncTweet(
           character._id,
-          10,
           minFaves[i],
           `${since.getFullYear()}-${since.getMonth() + 1}-${since.getDate()}`,
           `${until.getFullYear()}-${until.getMonth() + 1}-${until.getDate()}`
