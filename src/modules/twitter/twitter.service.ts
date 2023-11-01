@@ -90,16 +90,15 @@ const getTweetsFromTwitterApi = async (query: string, nextCursor?: string) => {
   while (tries < rtwtInstances.length && tweetRetry < 2) {
     try {
       tweetBatch = await getRetwittInstance()!.tweet.search({ hashtags: [query] }, 20, nextCursor);
-      break;
     } catch (error) {
-      logger.error(error);
+      logger.error(`Account #${tweetCounter} is rate limited.`);
     }
     tries += 1;
     if (tries === rtwtInstances.length) {
       tries = 0;
       tweetRetry += 1;
-      logger.error(`All account limited. Sleeping for 10 mins`);
-      await new Promise((r) => setTimeout(r, 1000 * 60 * 10));
+      logger.error(`All account limited. Sleeping for 15 mins`);
+      await new Promise((r) => setTimeout(r, 1000 * 60 * 15));
     }
   }
   return tweetBatch;
@@ -112,10 +111,10 @@ const syncTweet = async (
   sinceDate?: string,
   untilDate?: string
 ) => {
-  const character: ICharacterDoc | null = await Character.findByIdAndUpdate(id, {
-    isSyncing: true,
-    lastSynced: new Date(),
-  }).exec();
+  const character: ICharacterDoc | null = await Character.findOneAndUpdate(
+    { id, isSyncing: false },
+    { isSyncing: true, lastSynced: new Date() }
+  ).exec();
   const since = sinceDate != null ? ` since:${sinceDate}` : '';
   const until = untilDate != null ? ` until:${untilDate}` : '';
   if (character == null) {
@@ -145,9 +144,9 @@ const syncTweet = async (
       if (nextCursor == null || tweetBatch.list.length < 20) {
         break;
       }
-    } while (nextCursor !== undefined && i < (limit !== undefined ? limit : character.limit));
+    } while (nextCursor !== undefined);
   }
-  Character.findByIdAndUpdate(id, { isSyncing: false }).exec();
+  await Character.findByIdAndUpdate(id, { isSyncing: false }).exec();
 };
 
 export const syncCharactersTweets = async () => {
@@ -221,17 +220,24 @@ export const fixTags = async () => {
     logger.info(`finished processing ${character.tlName}`);
   }
   logger.info(`finished fixing tags`);
-  // const tweets = await Tweet.find({ postDate: { $gt: dateLimit } }, { postDate: 1, tweetId: 1, likeCount: 1 });
 };
 
 export const recheckTweet = async () => {
-  const dateLimit = new Date();
-  dateLimit.setMonth(dateLimit.getMonth() - 1);
-  const tweets = await Tweet.find({ postDate: { $gt: dateLimit } }, { postDate: 1, tweetId: 1, likeCount: 1 });
+  const dateUpperLimit = new Date();
+  const dateLowerLimit = new Date();
+  dateLowerLimit.setDate(dateLowerLimit.getDate() - 3);
+  dateUpperLimit.setDate(dateUpperLimit.getDate() - 1);
+  const tweets = await Tweet.find(
+    { postDate: { $gt: dateLowerLimit, $lt: dateUpperLimit } },
+    { postDate: 1, tweetId: 1, likeCount: 1 }
+  );
   const rettiwt = new Rettiwt();
   for (const tweet of tweets) {
     const tweetObject = await rettiwt.tweet.details(tweet.tweetId);
-    tweet.likeCount = tweetObject.likeCount;
-    tweet.save();
+    if (tweetObject != null) {
+      tweet.likeCount = tweetObject.likeCount;
+      tweet.save();
+      await new Promise((r) => setTimeout(r, 2000));
+    }
   }
 };
