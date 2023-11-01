@@ -44,12 +44,25 @@ const upsertTweet = async (tweetBody: any, character: ICharacterDoc) => {
   return Tweet.create(tweetBody);
 };
 
-export const queryTweets = async (filter: Record<string, any>, options: IOptions, group?: string): Promise<QueryResult> => {
-  if (filter['tags'] == null && group != null && group !== '') {
+export const queryTweets = async (
+  filter: Record<string, any>,
+  options: IOptions,
+  group?: string,
+  tag?: string
+): Promise<QueryResult> => {
+  if (filter['characters'] == null && group != null && group !== '') {
     const characters = await Character.find({ group }, { tag: 1, otherTags: 1 });
-    const tags = characters.map((character) => character.tag);
+    filter['characters'] = { $in: characters };
+  } else if (filter['characters'] == null && tag != null) {
+    const characters = await Character.find(
+      {
+        $or: [{ tag }, { otherTags: tag }],
+      },
+      { tag: 1, otherTags: 1 }
+    );
+    const characterTags = characters.map((character) => character.tag);
     const otherTags = characters.flatMap((character) => (character.otherTags != null ? character.otherTags : []));
-    const allTags = [...tags, ...otherTags];
+    const allTags = [...characterTags, ...otherTags];
     filter['tags'] = { $in: allTags };
   }
   const tweets = await Tweet.paginate(filter, options);
