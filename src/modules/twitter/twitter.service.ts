@@ -90,6 +90,7 @@ const getTweetsFromTwitterApi = async (query: string, nextCursor?: string) => {
   while (tries < rtwtInstances.length && tweetRetry < 2) {
     try {
       tweetBatch = await getRetwittInstance()!.tweet.search({ hashtags: [query] }, 20, nextCursor);
+      break;
     } catch (error) {
       logger.error(`Account #${tweetCounter} is rate limited.`);
     }
@@ -105,10 +106,10 @@ const getTweetsFromTwitterApi = async (query: string, nextCursor?: string) => {
 };
 
 const syncTweet = async (id: mongoose.Types.ObjectId, minFaves?: number, sinceDate?: string, untilDate?: string) => {
-  const character: ICharacterDoc | null = await Character.findOneAndUpdate(
-    { id },
-    { isSyncing: true, lastSynced: new Date() }
-  ).exec();
+  const character: ICharacterDoc | null = await Character.findByIdAndUpdate(id, {
+    isSyncing: true,
+    lastSynced: new Date(),
+  }).exec();
   const since = sinceDate != null ? ` since:${sinceDate}` : '';
   const until = untilDate != null ? ` until:${untilDate}` : '';
   if (character == null) {
