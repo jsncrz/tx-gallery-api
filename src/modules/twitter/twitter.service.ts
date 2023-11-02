@@ -104,56 +104,50 @@ const getTweetsFromTwitterApi = async (query: string, nextCursor?: string) => {
   return tweetBatch;
 };
 
-const syncTweet = async (
-  id: mongoose.Types.ObjectId,
-  minFaves?: number,
-  sinceDate?: string,
-  untilDate?: string
-) => {
+const syncTweet = async (id: mongoose.Types.ObjectId, minFaves?: number, sinceDate?: string, untilDate?: string) => {
   const character: ICharacterDoc | null = await Character.findOneAndUpdate(
-    { id, isSyncing: false },
+    { id },
     { isSyncing: true, lastSynced: new Date() }
   ).exec();
   const since = sinceDate != null ? ` since:${sinceDate}` : '';
   const until = untilDate != null ? ` until:${untilDate}` : '';
   if (character == null) {
-    throw new Error();
-  } else {
-    let nextCursor: string | undefined;
-    let i = 0;
-    const query = `${character.tag} min_faves:${
-      minFaves !== undefined ? minFaves : character.minFaves
-    } filter:images${since}${until}`;
-    let prevCursor = null;
-    do {
-      const tweetBatch = await getTweetsFromTwitterApi(query, nextCursor);
-      if (prevCursor === nextCursor) {
-        break;
-      }
-      prevCursor = nextCursor;
-      if (tweetBatch == null) {
-        return;
-      }
-      logger.info(`finding tag: ${character.tag} page: ${i} size: ${tweetBatch.list.length}`);
-      for await (const tweetObj of tweetBatch.list) {
-        await createTweetFromSearch(tweetObj, character);
-      }
-      i += 1;
-      nextCursor = tweetBatch.next.value;
-      if (nextCursor == null || tweetBatch.list.length < 20) {
-        break;
-      }
-    } while (nextCursor !== undefined);
+    return;
   }
+  let nextCursor: string | undefined;
+  let i = 0;
+  const query = `${character.tag} min_faves:${
+    minFaves !== undefined ? minFaves : character.minFaves
+  } filter:images${since}${until}`;
+  let prevCursor = null;
+  do {
+    const tweetBatch = await getTweetsFromTwitterApi(query, nextCursor);
+    if (prevCursor === nextCursor) {
+      break;
+    }
+    prevCursor = nextCursor;
+    if (tweetBatch == null) {
+      return;
+    }
+    logger.info(`finding tag: ${character.tag} page: ${i} size: ${tweetBatch.list.length}`);
+    for await (const tweetObj of tweetBatch.list) {
+      await createTweetFromSearch(tweetObj, character);
+    }
+    i += 1;
+    nextCursor = tweetBatch.next.value;
+    if (nextCursor == null || tweetBatch.list.length < 20) {
+      break;
+    }
+  } while (nextCursor !== undefined);
   await Character.findByIdAndUpdate(id, { isSyncing: false }).exec();
 };
 
 export const syncCharactersTweets = async () => {
   tweetRetry = 0;
-  const since = new Date(new Date().getTime() - 259200000);
+  const since = new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * 2);
   const syncDate = new Date(new Date().getTime() - 6400000);
   const characters = await Character.find(
-    { lastSynced: { $lt: syncDate } },
+    { lastSynced: { $lt: syncDate }, isSyncing: false },
     { tag: 1, group: 1, _id: 1, lastSynced: 1, debutDate: 1, minFaves: 1 }
   );
   const minFaves = [2000, 1000, 500, 200, 100, 50];
