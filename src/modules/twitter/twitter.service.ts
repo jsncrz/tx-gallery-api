@@ -145,7 +145,7 @@ const syncTweet = async (id: mongoose.Types.ObjectId, minFaves?: number, sinceDa
 
 export const syncCharactersTweets = async () => {
   tweetRetry = 0;
-  const since = new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * 2);
+  const since = new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * 5);
   const syncDate = new Date(new Date().getTime() - 6400000);
   const characters = await Character.find(
     { lastSynced: { $lt: syncDate }, isSyncing: false },
