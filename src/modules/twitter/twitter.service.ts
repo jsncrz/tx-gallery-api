@@ -196,6 +196,7 @@ export const deepSyncTweet = async (id: mongoose.Types.ObjectId) => {
       }
     }
     until.setMonth(until.getMonth() - 2);
+    until.setDate(until.getDate() + 1);
     since.setMonth(since.getMonth() - 2);
   }
   logger.info(`finished syncing ${character.tlName} tweets`);
