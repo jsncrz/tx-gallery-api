@@ -151,7 +151,7 @@ export const syncCharactersTweets = async () => {
     { lastSynced: { $lt: syncDate }, isSyncing: false },
     { tag: 1, group: 1, _id: 1, lastSynced: 1, debutDate: 1, minFaves: 1 }
   );
-  const minFaves = [2000, 1000, 500, 200, 100, 50];
+  const minFaves = [2000, 1000, 500, 100, 50];
   for (const character of characters) {
     if (tweetRetry === 2) {
       logger.error('Too many retries. Stopping sync!');
@@ -177,7 +177,7 @@ export const deepSyncTweet = async (id: mongoose.Types.ObjectId) => {
   if (character == null) {
     throw new Error();
   }
-  const minFaves = [5000, 2000, 1000, 500, 200, 100];
+  const minFaves = [5000, 2000, 1000, 500, 100];
   while (since.getTime() > character.debutDate!.getTime() - 1000 * 60 * 60 * 24 * 60) {
     logger.info(
       `Since: ${since.getFullYear()}-${since.getMonth() + 1}-${since.getDate()} until: ${until.getFullYear()}-${
