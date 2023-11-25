@@ -118,6 +118,7 @@ const syncTweet = async (id: mongoose.Types.ObjectId, minFaves?: number, sinceDa
   let nextCursor: string | undefined;
   let i = 0;
   const query = `${character.tag} min_faves:${minFaves !== undefined ? minFaves : character.minFaves} ${since}${until}`;
+  logger.info(`searching for:${query}`);
   let prevCursor = null;
   do {
     const tweetBatch = await getTweetsFromTwitterApi(query, nextCursor);
