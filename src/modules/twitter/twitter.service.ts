@@ -24,7 +24,6 @@ const initializeService = () => {
 };
 
 const getRetwittInstance = (): Rettiwt | undefined => {
-  logger.info(`account#${tweetCounter}`);
   tweetCounter = tweetCounter < rtwtInstances.length - 1 ? (tweetCounter += 1) : 0;
   return rtwtInstances[tweetCounter];
 };
@@ -117,7 +116,9 @@ const syncTweet = async (id: mongoose.Types.ObjectId, minFaves?: number, sinceDa
   }
   let nextCursor: string | undefined;
   let i = 0;
-  const query = `${character.tag} min_faves:${minFaves !== undefined ? minFaves : character.minFaves} ${since}${until}`;
+  const query = `${character.tag} filter:images min_faves:${
+    minFaves !== undefined ? minFaves : character.minFaves
+  } ${since}${until}`;
   logger.info(`searching for:${query}`);
   let prevCursor = null;
   do {
@@ -135,7 +136,7 @@ const syncTweet = async (id: mongoose.Types.ObjectId, minFaves?: number, sinceDa
     }
     i += 1;
     nextCursor = tweetBatch.next.value;
-    if (nextCursor == null || tweetBatch.list.length < 20) {
+    if (nextCursor == null || tweetBatch.list.length === 0) {
       break;
     }
   } while (nextCursor !== undefined);
