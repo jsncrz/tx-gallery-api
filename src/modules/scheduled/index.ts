@@ -3,7 +3,7 @@ import { twitterService } from '../twitter';
 
 class SyncJob {
   static syncAllCharactersTweets() {
-    schedule.scheduleJob('0 */4 * * *', function () {
+    schedule.scheduleJob('0 */12 * * *', function () {
       twitterService.syncCharactersTweets();
     });
   }

@@ -106,7 +106,6 @@ const getTweetsFromTwitterApi = async (query: string, nextCursor?: string) => {
 
 const syncTweet = async (id: mongoose.Types.ObjectId, minFaves?: number, sinceDate?: string, untilDate?: string) => {
   const character: ICharacterDoc | null = await Character.findByIdAndUpdate(id, {
-    isSyncing: true,
     lastSynced: new Date(),
   }).exec();
   const since = sinceDate != null ? ` since:${sinceDate}` : '';
@@ -148,7 +147,7 @@ export const syncCharactersTweets = async () => {
   const since = new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * 5);
   const syncDate = new Date(new Date().getTime() - 6400000);
   const characters = await Character.find(
-    { lastSynced: { $lt: syncDate }, isSyncing: false },
+    { lastSynced: { $lt: syncDate } },
     { tag: 1, group: 1, _id: 1, lastSynced: 1, debutDate: 1, minFaves: 1 }
   );
   const minFaves = [2000, 1000, 500, 100, 50];
