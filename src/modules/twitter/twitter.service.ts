@@ -170,12 +170,13 @@ export const syncCharactersTweets = async () => {
 
 export const deepSyncTweet = async (id: mongoose.Types.ObjectId) => {
   const until = new Date();
-  const since = new Date();
-  since.setMonth(until.getMonth() - 1);
+  // const since = new Date();
+  // since.setMonth(until.getMonth() - 2);
   const character = await Character.findById(id);
   if (character == null) {
     throw new Error();
   }
+  const since = character.lastSynced!;
   const minFaves = [5000, 2000, 1000, 500, 100];
   while (since.getTime() > character.debutDate!.getTime() - 1000 * 60 * 60 * 24 * 60) {
     logger.info(
