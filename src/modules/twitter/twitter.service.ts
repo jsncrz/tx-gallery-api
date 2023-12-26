@@ -171,7 +171,7 @@ export const syncCharactersTweets = async () => {
 export const deepSyncTweet = async (id: mongoose.Types.ObjectId) => {
   const until = new Date();
   const since = new Date();
-  since.setMonth(until.getMonth() - 2);
+  since.setMonth(until.getMonth() - 1);
   const character = await Character.findById(id);
   if (character == null) {
     throw new Error();
