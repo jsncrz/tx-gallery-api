@@ -1,0 +1,17 @@
+{
+    "presets": [
+        [
+            "@babel/env",
+            {
+                "modules": false,
+                "targets": {
+                    "node": "22"
+                }
+            }
+        ],
+        "@babel/typescript"
+    ],
+    "plugins": [
+        "add-import-extension"
+    ]
+}

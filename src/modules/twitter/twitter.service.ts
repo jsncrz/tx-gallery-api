@@ -2,10 +2,8 @@
 /* eslint-disable no-promise-executor-return */
 /* eslint-disable no-await-in-loop */
 import mongoose from 'mongoose';
-import { Rettiwt } from 'rettiwt-api';
-import { CursoredData } from 'rettiwt-api/dist/models/public/CursoredData';
-import { Tweet as TwtObj } from 'rettiwt-api/dist/models/public/Tweet';
-import config from '../../config/config';
+import { Rettiwt, Tweet as TwtObj, CursoredData } from 'rettiwt-api';
+// import config from '../../config/config';
 import { ICharacterDoc } from '../character/character.interfaces';
 import Character from '../character/character.model';
 import { logger } from '../logger';
@@ -16,19 +14,19 @@ const rtwtInstances: Rettiwt[] = [];
 let tweetCounter = 0;
 let tweetRetry = 0;
 
-const initializeService = () => {
-  const cookies: string[] = config.twitterCookies.replaceAll("'", '').split(',');
-  cookies.forEach((cookie) => {
-    rtwtInstances.push(new Rettiwt({ apiKey: cookie }));
-  });
-};
+// const initializeService = () => {
+//   const cookies: string[] = config.twitterCookies.replaceAll("'", '').split(',');
+//   cookies.forEach((cookie) => {
+//     rtwtInstances.push(new Rettiwt({ apiKey: cookie }));
+//   });
+// };
 
 const getRetwittInstance = (): Rettiwt | undefined => {
   tweetCounter = tweetCounter < rtwtInstances.length - 1 ? (tweetCounter += 1) : 0;
   return rtwtInstances[tweetCounter];
 };
 
-initializeService();
+// initializeService();
 
 const upsertTweet = async (tweetBody: any, character: ICharacterDoc) => {
   const tweet = await Tweet.findOne({ tweetId: tweetBody.tweetId });
@@ -72,7 +70,7 @@ const initFromTweetResult = (tweetResult: TwtObj, character: ICharacterDoc) => (
   tweetId: tweetResult.id,
   tags: tweetResult.entities.hashtags,
   user: tweetResult.tweetBy.userName,
-  url: tweetResult.media[0]?.url,
+  url: tweetResult.media?.[0]?.url,
   likeCount: tweetResult.likeCount,
   postDate: tweetResult.createdAt,
   characters: [character],
