@@ -1,4 +1,4 @@
-import { Model, Document } from 'mongoose';
+import { Model, Document, Types } from 'mongoose';
 import { QueryResult } from '../paginate/paginate';
 
 export interface ICharacter {
@@ -16,7 +16,7 @@ export interface ICharacter {
   debutDate: Date;
 }
 
-export interface ICharacterDoc extends ICharacter, Document {}
+export interface ICharacterDoc extends ICharacter, Document<Types.ObjectId> {}
 
 export interface ICharacterModel extends Model<ICharacterDoc> {
   paginate(filter: Record<string, any>, options: Record<string, any>): Promise<QueryResult>;
