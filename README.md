@@ -71,4 +71,4 @@ npm run start:build
 
 ## Acknowledgements
 - [Rettiwt API](https://github.com/Rishikant181/Rettiwt-API) - for allowing easy access to Twitter/X posts
-- [Node Express Boilerplate](https://github.com/hagopj13/node-express-boilerplate) - for the initial setup of the project
+- [Node Express Boilerplate](https://github.com/saisilinus/node-express-mongoose-typescript-boilerplate) - for the initial setup of the project
