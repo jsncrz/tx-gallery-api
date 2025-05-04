@@ -1,0 +1,6 @@
+services:
+  tx-gallery-api:
+    container_name: tx-api-dev
+    command: npm run start:build
+    environment:
+      - NODE_ENV=development
