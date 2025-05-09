@@ -1,0 +1,32 @@
+services:
+  tx-gallery-api:
+    build: .
+    image: "tx-gallery-api"
+    user: "node"
+    working_dir: /usr/src/tx-gallery-api
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017/tx-gallery
+    volumes:
+      - ./:/usr/src/tx-gallery-api
+    expose: 
+      - 3000
+    ports:
+      - "3000:3000"
+    networks:
+      - node-network
+
+  mongodb:
+    image: mongo
+    ports:
+      - '27017:27017'
+    volumes:
+      - dbdata:/data/db
+    networks:
+      - node-network
+  
+networks:
+  node-network:
+    driver: bridge
+
+volumes:
+  dbdata:
