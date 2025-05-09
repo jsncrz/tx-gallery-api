@@ -6,6 +6,7 @@ const envVarsSchema = Joi.object()
     NODE_ENV: Joi.string().valid('production', 'development', 'test').default('development'),
     PORT: Joi.number().default(3000),
     MONGODB_URL: Joi.string().required().description('Mongo DB url'),
+    MONGODB_DB_NAME: Joi.string().required().description('Mongo DB database name'),
     TWITTER_COOKIES: Joi.string().required().description('Twitter Cookies'),
     JWT_SECRET: Joi.string().required().description('JWT secret key'),
     JWT_ACCESS_EXPIRATION_MINUTES: Joi.number().default(30).description('minutes after which access tokens expire'),
@@ -25,12 +26,12 @@ const { value: envVars, error } = envVarsSchema.prefs({ errors: { label: 'key' }
 if (error) {
   throw new Error(`Config validation error: ${error.message}`);
 }
-
+const mongoUrl = `${envVars.MONGODB_URL.replace('{dbName}', envVars.MONGODB_DB_NAME + (envVars.NODE_ENV === 'test' ? '-test' : ''))}`;
 const config = {
   env: envVars.NODE_ENV,
   port: envVars.PORT,
   mongoose: {
-    url: envVars.MONGODB_URL + (envVars.NODE_ENV === 'test' ? '-test' : ''),
+    url: mongoUrl,
     options: {
       useCreateIndex: true,
       useNewUrlParser: true,

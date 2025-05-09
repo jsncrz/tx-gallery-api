@@ -8,7 +8,7 @@ export const getCharacters = catchAsync(async (req: Request, res: Response) => {
   const filter = pick(req.query, ['group'], ['tlName']);
   const options: IOptions = pick(req.query, ['sortBy', 'limit', 'page', 'projectBy']);
   const result = await characterService.getCharacters(filter, options);
-  res.status(httpStatus.OK).send(JSON.stringify(result));
+  res.status(httpStatus.OK).json(result);
 });
 
 export const getCharactersByName = catchAsync(async (req: Request, res: Response) => {

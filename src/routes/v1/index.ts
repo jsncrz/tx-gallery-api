@@ -13,11 +13,11 @@ interface IRoute {
 
 const defaultIRoute: IRoute[] = [
   {
-    path: '/twitter',
+    path: '/tweets',
     route: twitterRoute,
   },
   {
-    path: '/character',
+    path: '/characters',
     route: characterRoute,
   },
   {
@@ -25,7 +25,7 @@ const defaultIRoute: IRoute[] = [
     route: authRoute,
   },
   {
-    path: '/user',
+    path: '/users',
     route: userRoute,
   },
 ];
