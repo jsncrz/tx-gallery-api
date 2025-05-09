@@ -7,7 +7,7 @@ const router: Router = express.Router();
 
 router.get('/', validate(characterValidation.getCharacters), characterController.getCharacters);
 router.get(
-  '/getCharactersByName',
+  '/names',
   validate(characterValidation.getCharactersByName),
   characterController.getCharactersByName
 );
