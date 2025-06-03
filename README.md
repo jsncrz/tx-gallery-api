@@ -1,5 +1,4 @@
-# WIP:tx-gallery-api
-
+# WIP: VT Gallery API
 This is the backend API for a Twitter/X post gallery application. It handles data management, authentication, and interaction with the Twitter/X platform via the `rettiwt-api`.
 
 ## Description
