@@ -1,4 +1,4 @@
-# tx-gallery-api
+# WIP:tx-gallery-api
 
 This is the backend API for a Twitter/X post gallery application. It handles data management, authentication, and interaction with the Twitter/X platform via the `rettiwt-api`.
 
