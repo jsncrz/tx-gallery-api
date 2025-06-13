@@ -6,8 +6,9 @@ import cors from 'cors';
 import httpStatus from 'http-status';
 import passport from 'passport';
 import { ApiError, errorConverter, errorHandler } from './modules/errors';
+import logger from './modules/logger/logger';
 import routes from './routes/v1';
-import SyncJob from './modules/scheduled';
+// import SyncJob from './modules/scheduled';
 import { jwtStrategy } from './modules/auth';
 import config from './config/config';
 
@@ -17,8 +18,16 @@ const app: Express = express();
 app.use(helmet());
 
 // enable cors
-app.use(cors());
-app.options('*', cors());
+if (config.env === 'production') {
+  logger.info(`Running in production mode`);
+  app.use(cors({
+    origin: config.clientUrl
+  }));
+} else {
+  logger.info(`Running in dev mode`);
+  app.use(cors());
+  app.options('*', cors());
+}
 
 // parse json request body
 app.use(express.json());
@@ -51,8 +60,8 @@ app.use(errorConverter);
 app.use(errorHandler);
 
 if (config.env === 'production') {
-  SyncJob.syncAllCharactersTweets();
-  SyncJob.resyncTweets();
+  // SyncJob.syncAllCharactersTweets();
+  // SyncJob.resyncTweets();
 }
 
 export default app;

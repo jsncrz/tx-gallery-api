@@ -1,0 +1,4 @@
+services:
+  tx-gallery-api:
+    container_name: tx-api-prod
+    command: npm run start --env=production
